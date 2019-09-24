@@ -1,0 +1,7 @@
+#!/bin/bash
+
+function mypy {
+
+	docker run --rm --volume "$(pwd)":"$(pwd)" --workdir "$(pwd)" --entrypoint "python" python "$@"
+
+}
