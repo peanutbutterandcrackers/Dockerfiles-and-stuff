@@ -4,6 +4,6 @@ function mypy {
 
 	local dirname="$(dirname "$(realpath $1)")"
 	local dotpyfile="$(basename "$1")"
-	docker run --rm --volume "$dirname":"$dirname" --workdir "$dirname" --entrypoint "python" python "$dotpyfile"
+	docker run --rm --interactive --tty --volume "$dirname":"$dirname" --workdir "$dirname" --entrypoint "python" python "$dotpyfile"
 
 }
