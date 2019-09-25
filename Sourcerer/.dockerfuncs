@@ -2,8 +2,14 @@
 
 function mypy {
 
-	local dirname="$(dirname "$(realpath $1)")"
 	local dotpyfile="$(basename "$1")"
-	docker run --rm --interactive --tty --volume "$dirname":"$dirname" --workdir "$dirname" --entrypoint "python" python "$dotpyfile"
+	local dirname="$(dirname "$(realpath $1)")"
+	local dockerimage="python"
+	local containerentrypoint="python"
+	docker run --rm --interactive --tty \
+                  --volume "$dirname":"$dirname" \
+                  --workdir "$dirname" \
+                  --entrypoint "$containerentrypoint" \
+                  "$dockerimage" "$dotpyfile"
 
 }
