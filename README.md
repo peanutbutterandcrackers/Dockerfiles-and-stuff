@@ -1,2 +1,5 @@
 # misc-dockerfiles
-Miscellaniuous Dockerfile-s for future reference
+Miscellaneous Dockerfiles and dot files
+
+**Dockerfiles**: Contains Dockerfiles
+**Sourcerer**: Contains dot files
