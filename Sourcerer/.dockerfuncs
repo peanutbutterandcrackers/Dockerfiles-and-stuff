@@ -13,3 +13,51 @@ function mypy {
                   "$dockerimage" "$dotpyfile"
 
 }
+
+function docker-export-data-container {
+	# Takes a name or id of a container and creates a .tar archive
+	# in the current working directory, from the volumes of the container
+	# USAGE:
+	#   $ docker-export-data-container DATA_VOLUME_CONTAINER
+
+	DATA_VOLUME_CONTAINER="$1" # Name or ID of the data container
+	BACKUP_TARFILE_NAME=${DATA_VOLUME_CONTAINER}_$(date +'%Y%m%d').tar
+	
+	declare -a VOLUME_MOUNT_DESTINATIONS
+	
+	for dest in $(docker inspect --format='{{range $k,$v := .Config.Volumes}}
+	{{println $k}}{{end}}' $DATA_VOLUME_CONTAINER 2> /dev/null); do
+		VOLUME_MOUNT_DESTINATIONS[((counter++))]="$dest"
+	done
+	
+	VOLUME_MOUNT_DESTINATIONS_STR="${VOLUME_MOUNT_DESTINATIONS[@]}"
+
+	docker run --rm --volumes-from $DATA_VOLUME_CONTAINER \
+                  --volume $(pwd):/backup alpine \
+                  tar cvf /backup/${BACKUP_TARFILE_NAME} $VOLUME_MOUNT_DESTINATIONS_STR
+
+	echo "The data volume container has been archived in: '$BACKUP_TARFILE_NAME'"
+}
+
+function docker-import-data-container {
+	# USAGE:
+	#   $ docker-import-data-container TARFILE [NEW_DV_CONTAINER_BASE_IMAGE [NEW_DV_COONTAINER_NAME]]
+
+	TAR_ARCHIVE="$1"
+
+	declare -a VOLUMES
+
+	for path in $(tar tf $TAR_ARCHIVE | cut -d '/' -f 1 | uniq); do
+		VOLUMES[((index++))]="--volume /$path"
+	done
+
+	DATA_VOLUME_CONTAINER_NAME=${3:-$(cut -d _ -f 1 <<< $TAR_ARCHIVE)}
+
+	docker run ${VOLUMES[@]} --name $DATA_VOLUME_CONTAINER_NAME ${2:-"alpine"}
+
+	docker run --rm --volumes-from $DATA_VOLUME_CONTAINER_NAME \
+                  --volume $(pwd):/restore \
+                  alpine /bin/sh -c "tar xvf /restore/$TAR_ARCHIVE"
+
+	echo "The data volume container has been imported as: '$DATA_VOLUME_CONTAINER_NAME'."
+}
