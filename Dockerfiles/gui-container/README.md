@@ -19,5 +19,6 @@ docker run --rm \
            --privileged \
        IMAGE_NAME
 ```
+One might have to run `xhost +"local:docker@"` (on the host) [to allow the docker user X access](https://github.com/jessfraz/dockerfiles/issues/329#issuecomment-368262183).
 
 Change the Dockerfile as needed to install other programs.
