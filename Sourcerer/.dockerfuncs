@@ -61,3 +61,39 @@ function docker-import-data-container {
 
 	echo "The data volume container has been imported as: '$DATA_VOLUME_CONTAINER_NAME'."
 }
+
+function quarantine {
+
+	# A container to test things out in a quarantine
+	# USAGE:
+	#    $ quarantine [optional_base_image]
+	#
+	# Spins up a container from the base image (default ubuntu:latest)
+	# ,with GUI and sound capabilites, with the current working direc-
+	# tory bind-mounted (READ ONLY) inside the container.  A temporary
+	# directory is also created in the current directory and bind-mou-
+	# nted inside the container (WRITE-ABLE) so as to save any necess-
+	# ary files from the quarantine session. If the directory is empty
+	# when the container stops, it is removed.
+	#
+	# The quarantine container is NOT saved. `docker commit` is recom-
+	# mended for that purpose.
+
+	local image=${1:-"ubuntu"}
+	local tempdir=$(mktemp -d ${FUNCNAME[@]^^}.XXXXXXX)
+	cd $tempdir
+	xhost +"local:docker@"
+	docker run --rm --interactive --tty \
+               --volume /tmp/.X11-unix:/tmp/.X11-unix \
+               --env DISPLAY=$DISPLAY \
+               --group-add $(getent group audio | cut -d: -f3) \
+               --device /dev/snd \
+               --volume "$(dirname $(pwd))":"$(dirname $(pwd))":ro \
+               --volume "$(pwd)":"$(pwd)" \
+               --workdir "$(dirname $(pwd))" \
+               --hostname "quarantine" \
+               $image
+	cd -
+	rmdir $tempdir
+
+}
