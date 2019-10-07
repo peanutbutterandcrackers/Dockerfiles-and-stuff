@@ -18,6 +18,7 @@ wget ${GNU_URL}${TAR_FILE}.sig
 gpg --verify ${TAR_FILE}.sig
 tar xvf ${TAR_FILE}
 mv var/guix /var && mv gnu /
+rm -rvf *
 
 # Make profile available (for root)
 mkdir -p ~root/.config/guix
