@@ -11,14 +11,12 @@ KERNEL=$(uname -s)
 SYSTEM=$(echo ${ARCH}-${KERNEL} | tr [[:upper:]] [[:lower:]])
 TAR_FILE="guix-binary-${GUIX_VERSION}.${SYSTEM}.tar.xz"
 
-cd ~
+cd /tmp
 gpg --keyserver pool.sks-keyservers.net --recv-keys 3CE464558A84FDC69DB40CFB090B11993D9AEBB5
 wget ${GNU_URL}${TAR_FILE}
 wget ${GNU_URL}${TAR_FILE}.sig
 gpg --verify ${TAR_FILE}.sig
-
-cd /tmp
-tar xvf ~/${TAR_FILE}
+tar xvf ${TAR_FILE}
 mv var/guix /var && mv gnu /
 
 # Make profile available (for root)
