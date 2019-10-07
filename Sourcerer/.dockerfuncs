@@ -97,3 +97,36 @@ function quarantine {
 	rmdir $tempdir
 
 }
+
+function spinguix {
+
+	# Spin up a guix container
+	# USAGE:
+	#   $ spinguix GUIX-IMAGE DATA-CONTAINER
+	#   - GUIX-IMAGE: must exist
+	#   - DATA-CONTAINER: Is created if it does not exist already
+	# The spinned guix container has all GUI capabilities (including sound).
+	# It is removed as soon as it is stopped. The reason why it is started
+	# using --privileged is because `guix build` builds things essentially inside
+	# containers. And --privileged is required to spin containers inside of containers.
+
+	local GUIX_IMAGE=$1
+	local DATA_CONTAINER=$2
+	local GUIX_IMAGE_EXISTS=$(docker inspect --format {{.RepoTags}} $GUIX_IMAGE 2> /dev/null)
+	local DATA_CONTAINER_EXISTS=$(docker inspect --format {{.Name}} $DATA_CONTAINER 2> /dev/null)
+	[ -z $GUIX_IMAGE_EXISTS ] && echo 'The specified guix image could not be found.' >&2 && return 1
+	[ -z $DATA_CONTAINER_EXISTS ] && docker create --volume /gnu \
+                                                   --volume /var/guix/ \
+                                                   --name "$DATA_CONTAINER" "$GUIX_IMAGE"
+
+	xhost +"local:docker@" &> /dev/null
+	docker run --rm --interactive --tty \
+                    --volumes-from "$DATA_CONTAINER" \
+                    --volume /tmp/.X11-unix:/tmp/.X11-unix \
+                    --env DISPLAY=$DISPLAY \
+                    --group-add $(getent group audio | cut -d: -f3) \
+                    --device /dev/snd \
+                    --privileged \
+                    "$GUIX_IMAGE"
+
+}
