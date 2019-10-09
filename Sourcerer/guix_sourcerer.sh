@@ -4,9 +4,16 @@
 function guix_profile_init {
     # A dummy `$ guix profile init`; no such command exists, yet.
     # Use an empty manifest file to instantiate a guix profile
-	GUIX_EMPTY_MANIFEST=`mktemp /tmp/XXXXXXXXXXXXX`
-    echo "(packages->manifest '())" > "$GUIX_EMPTY_MANIFEST"
-    guix package --manifest="$GUIX_EMPTY_MANIFEST"
+	echo "####### GUIX FIRST-RUN PROFILE SET-UP #######"
+	echo -e "(This may take some time. Please be patient.)\n"
+	local GUIX_EMPTY_MANIFEST=`mktemp /tmp/XXXXXXXXXXXXX`
+	echo -n "(packages->manifest '())" > "$GUIX_EMPTY_MANIFEST"
+	guix package --verbosity=3 --manifest="$GUIX_EMPTY_MANIFEST"
+	# In case of failure, cleanup
+	if [ $? -ne 0 ]; then
+		local GUIX_PROFILE="$HOME/.guix-profile"
+		rm -rf "$GUIX_PROFILE" "`readlink -f $GUIX_PROFILE`"
+	fi
 }
 
 # LANG can be either left unset or be set to something
@@ -19,7 +26,7 @@ function guix_profile_init {
 unset LANG
 
 # Instantiate a GUIX profile for the $USER if that hasn't been done yet
-[ -L "$HOME/.guix-profile" ] || guix_profile_init &> /dev/null
+[ -L "$HOME/.guix-profile" ] || guix_profile_init
 
 export GUIX_PROFILE="$HOME/.guix-profile"
 export GUIX_LOCPATH="$GUIX_PROFILE/lib/locale"
