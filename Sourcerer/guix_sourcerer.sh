@@ -32,6 +32,17 @@ export GUIX_PROFILE="$HOME/.guix-profile"
 export GUIX_LOCPATH="$GUIX_PROFILE/lib/locale"
 export PATH="$GUIX_PROFILE/bin${PATH:+:}$PATH"
 
+# GUIX_PROFILE is the user's guix profile at $HOME/.guix-profile.
+# However, there is also ~/.config/guix/current. This one is also
+# a profile - but for guix and guix-daemon itself. This is a careful
+# design descision made by the devs so as to allow users to roll-back
+# to previous versions of their profile without rolling back guix itself
+# and vice-versa. ~/.config/guix/current is initialized only after a su-
+# ccessful `guix pull`. The following adds it to the PATH if it exists.
+if [ -L "$HOME/.config/guix/current" ]; then
+	export PATH="$HOME/.config/guix/current/bin:$PATH"
+fi
+
 # Export all search-paths/environment-vars required to run packages
 # installed by GUIX. `guix package --search-paths=prefix` returns all
 # necessary environment variables including PATH (in the first line of
