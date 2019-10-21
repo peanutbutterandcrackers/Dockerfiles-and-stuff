@@ -21,9 +21,7 @@ function guix_profile_init {
 # then guix throws warnings about failing to install locale,
 # despite installing `glibc-utf8-locales` and `glibc-locales`
 # AND having set the correct GUIX_LOCPATH.
-# LANG was defaulting to "C.UTF-8" for newly-created non-root
-# users. So, unset LANG
-unset LANG
+[ -z "$LANG" -o "$LANG" = "C.UTF-8" ] && export LANG=en_US.UTF-8
 
 # Instantiate a GUIX profile for the $USER if that hasn't been done yet
 [ -L "$HOME/.guix-profile" ] || guix_profile_init
