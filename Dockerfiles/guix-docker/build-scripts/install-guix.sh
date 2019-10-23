@@ -1,8 +1,5 @@
 #!/bin/sh
 
-REQUIRES="gnupg shadow"
-apk add ${REQUIRES}
-
 GUIX_VERSION=1.0.1
 GNU_URL="https://ftp.gnu.org/gnu/guix/"
 
@@ -38,8 +35,6 @@ for i in `seq -w 1 10`; do
 done
 
 # Optional, but cool: add `$ info guix`
-OPTIONALS="texinfo"
-apk add ${OPTIONALS}
 mkdir -p /usr/local/share/info
 cd /usr/local/share/info
 for i in /var/guix/profiles/per-user/root/current-guix/share/info/*; do
